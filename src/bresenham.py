@@ -1,4 +1,4 @@
-def bresenham(x1, y1, x2, y2):
+def bresenham(x1: int, y1: int, x2: int, y2: int) -> list:
     """returns list of pixels contributing to line between (x1, y1) and (x2, y2)"""
     dir_x = 1 if x2 >= x1 else -1
     dir_y = 1 if y2 >= y1 else -1

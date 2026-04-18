@@ -2,6 +2,7 @@ import numpy as np
 
 
 def apply_filter(sinogram):
+    """Filters the sinogram using a convolution mask to reduce blurring"""
     filtered_sinogram = np.zeros_like(sinogram)
     kernel = np.array([-0.125, -0.25, 0.75, -0.25, -0.125])
 

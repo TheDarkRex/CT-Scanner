@@ -1,7 +1,7 @@
 import numpy as np
 from src.bresenham import bresenham
-from src.emiters import emitterPos
-from src.detectors import detectorsPos
+from src.emiters import emitter_pos
+from src.detectors import detectors_pos
 
 
 def get_sinogram(image, detectors_num, scans, span):
@@ -12,8 +12,8 @@ def get_sinogram(image, detectors_num, scans, span):
     for i in range(scans):
         angle = i * delta_alpha
 
-        xe, ye = emitterPos(image, angle)
-        detectors_positions = detectorsPos(image, angle, detectors_num, span)
+        xe, ye = emitter_pos(image, angle)
+        detectors_positions = detectors_pos(image, angle, detectors_num, span)
 
         for j, (xd, yd) in enumerate(detectors_positions):
             pixels = bresenham(xe, ye, xd, yd)
@@ -31,19 +31,22 @@ def get_sinogram(image, detectors_num, scans, span):
     return sinogram
 
 
-def inverse_radon(sinogram, image_shape, detectors_num, scans, span):
+def inverse_radon(sinogram, image_shape, detectors_num, scans, span, return_history=False):
+    height, width = image_shape
     reconstructed = np.zeros(image_shape)
     hits = np.zeros(image_shape)
-    height, width = image_shape
     delta_alpha = 360.0 / scans
+
+    if return_history:
+        history = np.zeros((scans, height, width))
 
     dummy_image = np.zeros(image_shape)
 
     for i in range(scans):
         angle = i * delta_alpha
 
-        xe, ye = emitterPos(dummy_image, angle)
-        detectors_positions = detectorsPos(dummy_image, angle, detectors_num, span)
+        xe, ye = emitter_pos(dummy_image, angle)
+        detectors_positions = detectors_pos(dummy_image, angle, detectors_num, span)
 
         for j, (xd, yd) in enumerate(detectors_positions):
             pixels = bresenham(xe, ye, xd, yd)
@@ -54,10 +57,21 @@ def inverse_radon(sinogram, image_shape, detectors_num, scans, span):
                     reconstructed[y, x] += ray_value
                     hits[y, x] += 1
 
-    hits[hits == 0] = 1
-    reconstructed = reconstructed / hits
+        if return_history:
+            temp_hits = hits.copy()
+            temp_hits[temp_hits == 0] = 1
+            history[i] = reconstructed / temp_hits
 
-    if np.max(reconstructed) > 0:
-        reconstructed = (reconstructed - np.min(reconstructed)) / (np.max(reconstructed) - np.min(reconstructed)) * 255
-
-    return reconstructed
+    if return_history:
+        global_min = np.min(history)
+        global_max = np.max(history)
+        if global_max - global_min > 0:
+            history = (history - global_min) / (global_max - global_min) * 255
+        return history
+    else:
+        hits[hits == 0] = 1
+        reconstructed = reconstructed / hits
+        if np.max(reconstructed) > 0:
+            reconstructed = (reconstructed - np.min(reconstructed)) / (
+                        np.max(reconstructed) - np.min(reconstructed)) * 255
+        return reconstructed

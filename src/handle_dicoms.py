@@ -2,8 +2,6 @@ import numpy as np
 import pydicom
 from pydicom.dataset import FileDataset, FileMetaDataset
 from pydicom.uid import generate_uid, ExplicitVRLittleEndian
-from PIL import Image
-
 
 def save_dicom(image, info, filename):
     file_meta = FileMetaDataset()
@@ -37,7 +35,6 @@ def save_dicom(image, info, filename):
 
     dataset.StudyDescription = info["StudyDescription"]
 
-    # IMPORTANT for viewers
     dataset.SeriesNumber = 1
     dataset.InstanceNumber = 1
 

@@ -6,6 +6,22 @@ from PIL import Image
 from pydicom.dataset import FileDataset, FileMetaDataset
 from pydicom.uid import generate_uid, ExplicitVRLittleEndian
 
+def add_padding(image_array, pad_value=0):
+    h, w = image_array.shape[:2]
+    size = max(h, w)
+
+    if len(image_array.shape) == 2:
+        new_image_array = np.full((size, size), pad_value, dtype=image_array.dtype)
+    else:
+        new_image_array = np.full((size, size, image_array.shape[2]), pad_value, dtype=image_array.dtype)
+
+    y_offset = (size - h) // 2
+    x_offset = (size - w) // 2
+
+    new_image_array[y_offset:y_offset + h, x_offset:x_offset + w] = image_array
+
+    return new_image_array
+
 def save_dicom(image_array, info, filename):
     file_meta = FileMetaDataset()
     file_meta.MediaStorageSOPClassUID = pydicom.uid.SecondaryCaptureImageStorage
@@ -89,9 +105,9 @@ def load_dicom(filepath):
         cols = getattr(dataset, "Columns", None)
 
         if rows and cols:
-            image = image_array.reshape(rows, cols)
-        else:
-            image = image_array
+            image_array = image_array.reshape(rows, cols)
+
+        image = add_padding(image_array)
 
     return info, image
 
@@ -104,6 +120,8 @@ def load_image(filepath):
     else:
         img = Image.open(filepath).convert("L")
         image_array = np.array(img).astype(np.uint8)
+
+        image_array = add_padding(image_array)
 
         info = {
             "PatientName": "BRAK",
@@ -118,5 +136,5 @@ def load_image(filepath):
 
         return info, image_array
 
-#image_info, image_array = load_image("../data/input/Kolo.dcm")
-#print(image_info)
+#image_info, image_array = load_image("../data/input/SADDLE_PE.dcm")
+#print(image_array.shape)

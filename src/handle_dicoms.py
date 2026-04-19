@@ -1,9 +1,12 @@
+import os
+
 import numpy as np
 import pydicom
+from PIL import Image
 from pydicom.dataset import FileDataset, FileMetaDataset
 from pydicom.uid import generate_uid, ExplicitVRLittleEndian
 
-def save_dicom(image, info, filename):
+def save_dicom(image_array, info, filename):
     file_meta = FileMetaDataset()
     file_meta.MediaStorageSOPClassUID = pydicom.uid.SecondaryCaptureImageStorage
     file_meta.MediaStorageSOPInstanceUID = generate_uid()
@@ -40,9 +43,7 @@ def save_dicom(image, info, filename):
 
     dataset.ImageType = ["ORIGINAL", "PRIMARY", "AXIAL"]
 
-    img = np.array(image.convert("L")).astype(np.uint8)
-
-    dataset.Rows, dataset.Columns = img.shape
+    dataset.Rows, dataset.Columns = image_array.shape
     dataset.SamplesPerPixel = 1
     dataset.PhotometricInterpretation = "MONOCHROME2"
 
@@ -56,7 +57,7 @@ def save_dicom(image, info, filename):
     dataset.WindowCenter = 128
     dataset.WindowWidth = 256
 
-    dataset.PixelData = img.tobytes()
+    dataset.PixelData = image_array.tobytes()
 
     dataset.save_as(filename, write_like_original=False)
 
@@ -82,14 +83,40 @@ def load_dicom(filepath):
     image = None
 
     if hasattr(dataset, "PixelData"):
-        arr = np.frombuffer(dataset.PixelData, dtype=np.uint8)
+        image_array = np.frombuffer(dataset.PixelData, dtype=np.uint8)
 
         rows = getattr(dataset, "Rows", None)
         cols = getattr(dataset, "Columns", None)
 
         if rows and cols:
-            image = arr.reshape(rows, cols)
+            image = image_array.reshape(rows, cols)
         else:
-            image = arr
+            image = image_array
 
     return info, image
+
+
+def load_image(filepath):
+    extension = os.path.splitext(filepath)[1].lower()
+
+    if extension == ".dcm":
+        return load_dicom(filepath)
+    else:
+        img = Image.open(filepath).convert("L")
+        image_array = np.array(img).astype(np.uint8)
+
+        info = {
+            "PatientName": "BRAK",
+            "PatientID": "BRAK",
+            "PatientBirthDate": "BRAK",
+            "PatientSex": "BRAK",
+            "PatientWeight": "BRAK",
+            "PatientSize": "BRAK",
+            "StudyDate": "BRAK",
+            "StudyDescription": "BRAK"
+        }
+
+        return info, image_array
+
+#image_info, image_array = load_image("../data/input/Kolo.dcm")
+#print(image_info)

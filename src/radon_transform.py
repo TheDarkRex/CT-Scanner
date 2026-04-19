@@ -18,15 +18,12 @@ def get_sinogram(image, detectors_num, scans, span):
         for j, (xd, yd) in enumerate(detectors_positions):
             pixels = bresenham(xe, ye, xd, yd)
             line_sum = 0
-            valid_pixels = 0
 
             for x, y in pixels:
                 if 0 <= x < width and 0 <= y < height:
                     line_sum += image[y, x]
-                    valid_pixels += 1
 
-            if valid_pixels > 0:
-                sinogram[i, j] = line_sum / valid_pixels
+            sinogram[i, j] = line_sum
 
     return sinogram
 

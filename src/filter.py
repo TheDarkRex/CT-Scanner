@@ -14,7 +14,7 @@ def apply_filter(sinogram):
     center = kernel_size // 2
     kernel = np.zeros(kernel_size)
 
-    # Generowanie matematycznego filtru Ram-Lak
+    # Filtr Ram-Lak
     for i in range(kernel_size):
         if i == center:
             kernel[i] = 1.0  # Główny, centralny pik

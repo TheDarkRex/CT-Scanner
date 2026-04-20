@@ -80,19 +80,19 @@ def save_dicom(image_array, info, filename):
 def load_dicom(filepath):
     dataset = pydicom.dcmread(filepath)
 
-    def get(tag, default="BRAK"):
+    def get(tag, default=None):
         return getattr(dataset, tag, default)
 
     info = {
-        "PatientName": str(get("PatientName")),
-        "PatientID": str(get("PatientID")),
-        "PatientBirthDate": str(get("PatientBirthDate")),
-        "PatientSex": str(get("PatientSex")),
-        "PatientWeight": str(get("PatientWeight")),
-        "PatientSize": str(get("PatientSize")),
+        "PatientName": get("PatientName"),
+        "PatientID": get("PatientID"),
+        "PatientBirthDate": get("PatientBirthDate"),
+        "PatientSex": get("PatientSex"),
+        "PatientWeight": get("PatientWeight"),
+        "PatientSize": get("PatientSize"),
 
-        "StudyDate": str(get("StudyDate")),
-        "StudyDescription": str(get("StudyDescription"))
+        "StudyDate": get("StudyDate"),
+        "StudyDescription": get("StudyDescription")
     }
 
 
@@ -124,14 +124,14 @@ def load_image(filepath):
         image_array = add_padding(image_array)
 
         info = {
-            "PatientName": "BRAK",
-            "PatientID": "BRAK",
-            "PatientBirthDate": "BRAK",
-            "PatientSex": "BRAK",
-            "PatientWeight": "BRAK",
-            "PatientSize": "BRAK",
-            "StudyDate": "BRAK",
-            "StudyDescription": "BRAK"
+            "PatientName": None,
+            "PatientID": None,
+            "PatientBirthDate": None,
+            "PatientSex": None,
+            "PatientWeight": None,
+            "PatientSize": None,
+            "StudyDate": None,
+            "StudyDescription": None
         }
 
         return info, image_array

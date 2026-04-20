@@ -69,10 +69,6 @@ def inverse_radon(sinogram, image_shape, detectors_num, scans, span, return_hist
         for j, (xd, yd) in enumerate(detectors_positions):
             pixels = bresenham(xe, ye, xd, yd)
 
-            dx = abs(xd - xe)
-            dy = abs(yd - ye)
-            length_factor = np.sqrt(dx ** 2 + dy ** 2) / max(dx, dy) if max(dx, dy) > 0 else 1.0
-
             ray_value = sinogram[i, j]
 
             for x, y in pixels:

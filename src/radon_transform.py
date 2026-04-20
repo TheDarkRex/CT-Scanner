@@ -28,7 +28,23 @@ def get_sinogram(image, detectors_num, scans, span):
             # if valid_pixels > 0:
             #     sinogram[i, j] = line_sum / valid_pixels
 
-            sinogram[i, j] = line_sum
+            dx = abs(xd - xe)
+            dy = abs(yd - ye)
+            length_factor = np.sqrt(dx ** 2 + dy ** 2) / max(dx, dy) if max(dx, dy) > 0 else 1.0
+
+            center = width / 2.0
+            v_cx, v_cy = center - xe, center - ye
+            v_rx, v_ry = xd - xe, yd - ye
+
+            len_c = np.sqrt(v_cx ** 2 + v_cy ** 2)
+            len_r = np.sqrt(v_rx ** 2 + v_ry ** 2)
+
+            cos_gamma = 1.0
+            if len_c > 0 and len_r > 0:
+                # Iloczyn skalarny do wyliczenia cosinusa
+                cos_gamma = (v_cx * v_rx + v_cy * v_ry) / (len_c * len_r)
+
+            sinogram[i, j] = line_sum * length_factor * cos_gamma
 
     return sinogram
 
@@ -52,6 +68,11 @@ def inverse_radon(sinogram, image_shape, detectors_num, scans, span, return_hist
 
         for j, (xd, yd) in enumerate(detectors_positions):
             pixels = bresenham(xe, ye, xd, yd)
+
+            dx = abs(xd - xe)
+            dy = abs(yd - ye)
+            length_factor = np.sqrt(dx ** 2 + dy ** 2) / max(dx, dy) if max(dx, dy) > 0 else 1.0
+
             ray_value = sinogram[i, j]
 
             for x, y in pixels:
@@ -60,9 +81,9 @@ def inverse_radon(sinogram, image_shape, detectors_num, scans, span, return_hist
                     hits[y, x] += 1
 
         if return_history:
-            # temp_hits = hits.copy()
-            # temp_hits[temp_hits == 0] = 1
-            history[i] = reconstructed.copy() #/ temp_hits
+            temp_hits = hits.copy()
+            temp_hits[temp_hits == 0] = 1
+            history[i] = reconstructed.copy() / temp_hits
 
     if return_history:
         #global_min = np.min(history)
@@ -72,18 +93,19 @@ def inverse_radon(sinogram, image_shape, detectors_num, scans, span, return_hist
         # if global_max > 0:
         #     history = (history / global_max) * 255
 
-        p_max = np.percentile(history, 99.5)
-
-        if p_max > 0:
-            history = (history / p_max) * 255
+        for k in range(scans):
+            history[k][hits < (scans * 0.05)] = 0.0
+            p_max = np.percentile(history[k], 99.5)
+            if p_max > 0:
+                history[k] = (history[k] / p_max) * 255
 
         # Docinamy pojedyncze, odstające piksele, które po podzieleniu przez p_max przekroczyły 255
         history = np.clip(history, 0, 255)
 
         return history
     else:
-        # hits[hits == 0] = 1
-        # reconstructed = reconstructed / hits
+        hits[hits == 0] = 1
+        reconstructed = reconstructed / hits
 
 
         # reconstructed = np.clip(reconstructed, 0, None)
@@ -100,3 +122,4 @@ def inverse_radon(sinogram, image_shape, detectors_num, scans, span, return_hist
 
         reconstructed = np.clip(reconstructed, 0, 255)
         return reconstructed
+

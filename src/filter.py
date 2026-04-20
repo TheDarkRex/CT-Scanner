@@ -21,11 +21,13 @@ def apply_filter(sinogram):
         elif (i - center) % 2 != 0:
             # Ujemne wartości gasnące z kwadratem odległości (tylko dla nieparzystych)
             kernel[i] = -4.0 / (np.pi ** 2 * (i - center) ** 2)
-        else:
-            kernel[i] = 0.0  # Zera dla odległości parzystych
 
-    # Wykonanie właściwego splotu na każdym wierszu sinogramu
+    pad_width = kernel_size // 2
     for i in range(sinogram.shape[0]):
-        filtered_sinogram[i, :] = np.convolve(sinogram[i, :], kernel, mode='same')
+        # Dopełnienie wartością brzegową lub zerami
+        padded_row = np.pad(sinogram[i, :], pad_width, mode='edge')
+        convolved = np.convolve(padded_row, kernel, mode='same')
+        # Przycięcie do oryginalnego rozmiaru
+        filtered_sinogram[i, :] = convolved[pad_width:-pad_width]
 
     return filtered_sinogram

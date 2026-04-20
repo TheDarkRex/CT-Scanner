@@ -7,7 +7,7 @@ def detectors_pos(image, angle, detectors, angle_range):
     radians = np.deg2rad(angle)
     r = image.shape[0] * np.sqrt(2) / 2
     center = int(image.shape[0] / 2)
-    theta = np.deg2rad(angle_range * 2)
+    theta = np.deg2rad(angle_range)
 
     positions = []
 

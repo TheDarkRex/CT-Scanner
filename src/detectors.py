@@ -11,18 +11,18 @@ def detectors_pos(image, angle, detectors, angle_range):
 
     positions = []
 
-    # first detector
+    #pierwszy det
     xd = int(r * np.cos(radians + np.pi - theta / 2)) + center
     yd = int(r * np.sin(radians + np.pi - theta / 2)) + center
     positions.append((xd, yd))
 
-    # intermediate detectors
+    #środkowe det
     for i in range(1, detectors - 1):
         xd = int(r * np.cos(radians + np.pi - theta / 2 + i * (theta / (detectors - 1)))) + center
         yd = int(r * np.sin(radians + np.pi - theta / 2 + i * (theta / (detectors - 1)))) + center
         positions.append((xd, yd))
 
-    # last detector
+    #ostatni det
     xd = int(r * np.cos(radians + np.pi + theta / 2)) + center
     yd = int(r * np.sin(radians + np.pi + theta / 2)) + center
     positions.append((xd, yd))

@@ -3,7 +3,7 @@ import numpy as np
 
 def apply_filter(sinogram):
     """
-    Filtruje sinogram przy użyciu precyzyjnej maski splotowej (Ram-Lak).
+    filtruje sinogram przy użyciu maski splotowej Ram-Lak
     """
     filtered_sinogram = np.zeros_like(sinogram)
 
@@ -23,9 +23,11 @@ def apply_filter(sinogram):
             kernel[i] = -4.0 / (np.pi ** 2 * (i - center) ** 2)
 
     pad_width = kernel_size // 2
+    # Dla każdego wiersza sinogramu
     for i in range(sinogram.shape[0]):
         # Dopełnienie wartością brzegową lub zerami
         padded_row = np.pad(sinogram[i, :], pad_width, mode='edge')
+        # Splot
         convolved = np.convolve(padded_row, kernel, mode='same')
         # Przycięcie do oryginalnego rozmiaru
         filtered_sinogram[i, :] = convolved[pad_width:-pad_width]
